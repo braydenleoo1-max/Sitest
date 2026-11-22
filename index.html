@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Far.AI</title>
+<style>
+:root{--bg:#fff;--side:#f9f9f9;--text:#0d0d0d;--muted:#6b6b6b;--line:#e5e5e5;--hover:#ececec;--bubble:#f0f0f0;--accent:#0d0d0d;--on-accent:#fff;--err:#b3261e;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#212121;--side:#171717;--text:#ececec;--muted:#a0a0a0;--line:#363636;--hover:#2a2a2a;--bubble:#2f2f2f;--accent:#ececec;--on-accent:#171717;--err:#f2b8b5;color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{display:flex;height:100dvh;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
+[hidden]{display:none!important}
+#side{width:260px;flex:none;background:var(--side);display:flex;flex-direction:column;gap:6px;padding:calc(10px + env(safe-area-inset-top,0px)) 10px calc(10px + env(safe-area-inset-bottom,0px))}
+.logo{font-weight:700;font-size:20px;padding:6px 10px 10px}
+#new{display:block;width:100%;text-align:left;padding:9px 10px;border-radius:10px;font-weight:600}
+#new:hover,.item:hover,.item.on,#pick:hover{background:var(--hover)}
+.lbl{font-size:12px;color:var(--muted);padding:10px 10px 2px}
+#list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+.item{display:flex;align-items:center;border-radius:10px}
+.item .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:9px 10px;text-align:left}
+.item .x{padding:6px 12px;color:var(--muted)}
+.fine{font-size:12px;color:var(--muted);text-align:center}
+main{flex:1;min-width:0;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:4px;padding:calc(8px + env(safe-area-inset-top,0px)) 12px 8px}
+#menu{font-size:22px;padding:4px 10px;border-radius:10px}
+#pick{font-weight:600;font-size:18px;padding:6px 10px;border-radius:10px}
+#pick small{font-weight:400;color:var(--muted);font-size:13px;margin-left:6px}
+#chat{flex:1;overflow-y:auto;padding:8px 16px}
+#wrap,#empty{max-width:760px;margin:0 auto}
+#wrap{display:flex;flex-direction:column;gap:22px;padding-bottom:12px}
+.m{overflow-wrap:anywhere;white-space:pre-wrap}
+.u{align-self:flex-end;max-width:85%;background:var(--bubble);padding:8px 16px;border-radius:20px}
+.a.err{color:var(--err)}
+.a pre{white-space:pre;overflow-x:auto;background:var(--side);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0;font-size:14px}
+.a code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9em}
+.dots span{display:inline-block;width:7px;height:7px;margin-right:5px;border-radius:50%;background:var(--muted);animation:b 1s infinite}
+.dots span:nth-child(2){animation-delay:.15s}.dots span:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,80%,100%{opacity:.3}40%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.dots span{animation:none}}
+#empty{text-align:center;padding-top:12vh}
+#empty h1{font-size:28px;font-weight:600;margin:0 0 20px;letter-spacing:-.02em}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip{border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:14px}
+.chip:hover{background:var(--hover)}
+.comp{padding:6px 12px calc(10px + env(safe-area-inset-bottom,0px))}
+.box{max-width:760px;margin:0 auto;display:flex;align-items:flex-end;gap:8px;background:var(--bubble);border-radius:26px;padding:6px 6px 6px 18px}
+textarea{flex:1;resize:none;max-height:150px;min-height:36px;padding:7px 0;border:0;outline:0;background:none;color:var(--text);font:inherit;line-height:1.5}
+#go{width:36px;height:36px;border-radius:50%;background:var(--accent);color:var(--on-accent);font-weight:700;flex:none}
+#go:disabled{opacity:.25;cursor:default}
+.comp .fine{margin-top:6px}
+#sheet{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:16px}
+.card{background:var(--bg);border-radius:20px;padding:22px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:12px}
+.card h2{margin:0;font-size:20px}
+select{padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text);font:inherit}
+.btn{padding:12px;border-radius:12px;background:var(--accent);color:var(--on-accent);font-weight:600}
+.btn:disabled{opacity:.5}
+progress{width:100%;height:8px;accent-color:var(--accent)}
+.small{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.small.err{color:var(--err)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#scrim{display:none}
+@media (max-width:800px){
+#side{position:fixed;top:0;bottom:0;left:0;width:290px;z-index:20;transform:translateX(-100%);transition:transform .2s}
+#side.open{transform:none}
+#side.open+#scrim{display:block;position:fixed;inset:0;z-index:15;background:rgba(0,0,0,.4)}
+}
+@media (min-width:801px){#menu{display:none}}
+</style>
+</head>
+<body>
+<aside id="side">
+  <div class="logo">Far.AI</div>
+  <button id="new">+ New chat</button>
+  <div class="lbl">Chats</div>
+  <div id="list"></div>
+  <div class="fine">Runs on your device. Chats stay in this browser.</div>
+</aside>
+<div id="scrim"></div>
+<main>
+  <header>
+    <button id="menu" aria-label="Open chats">☰</button>
+    <button id="pick">Far.AI <small id="mname">Choose model</small></button>
+  </header>
+  <div id="chat">
+    <div id="empty"><h1>How can I help?</h1><div class="chips" id="chips"></div></div>
+    <div id="wrap"></div>
+  </div>
+  <div class="comp">
+    <div class="box">
+      <textarea id="in" rows="1" placeholder="Message Far.AI"></textarea>
+      <button id="go" disabled aria-label="Send">↑</button>
+    </div>
+    <div class="fine">Small on-device models can make mistakes.</div>
+  </div>
+</main>
+<div id="sheet">
+  <div class="card">
+    <h2>Choose your AI</h2>
+    <select id="model" aria-label="Model"></select>
+    <button class="btn" id="load">Load</button>
+    <progress id="bar" max="1" value="0" hidden></progress>
+    <div class="small" id="note"></div>
+    <button class="small" id="close" hidden>Cancel</button>
+  </div>
+</div>
+<script type="module">
+const WEBLLM = "https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.79/+esm";
+const SYSTEM = "You are Far.AI, a friendly, helpful AI assistant. Answer clearly and keep it reasonably concise.";
+const MODELS = [
+  ["Qwen2.5-0.5B-Instruct", "Lightning: Qwen 2.5 0.5B", "Smallest and fastest. Runs on almost any phone (about 1 GB of memory)."],
+  ["Llama-3.2-1B-Instruct", "Phone pick: Llama 3.2 1B", "Best for most phones: quick and decent (about 1.1 GB of memory)."],
+  ["Qwen2.5-1.5B-Instruct", "Balanced: Qwen 2.5 1.5B", "Smarter, still OK on newer phones (about 1.6 GB of memory)."],
+  ["Llama-3.2-3B-Instruct", "Smart: Llama 3.2 3B", "Great on computers, heavy for phones (about 2.3 GB of memory)."],
+  ["Llama-3.1-8B-Instruct", "Most powerful: Llama 3.1 8B", "Computer with a good GPU only (about 5.3 GB of memory, big download)."]
+];
+const SUGGEST = ["Explain something simply", "Help me write a message", "Tell me a fun fact", "Plan my day"];
+const $ = (id) => document.getElementById(id);
+const chat = $("chat"), wrap = $("wrap"), input = $("in"), go = $("go"), emptyEl = $("empty");
+const KEY = "farai.chats.v1";
+let chats = [], cur = null, engine = null, busy = false;
+try { chats = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) { chats = []; }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(chats.slice(0, 40))); } catch (e) {} };
+const newChat = () => ({ id: Date.now().toString(36), title: "New chat", turns: [] });
+
+MODELS.forEach(([id, label]) => { const o = document.createElement("option"); o.value = id; o.textContent = label; $("model").appendChild(o); });
+$("model").selectedIndex = matchMedia("(pointer:coarse)").matches ? 1 : 3;
+const hint = () => note(MODELS[$("model").selectedIndex][2]);
+$("model").onchange = hint;
+SUGGEST.forEach((s) => { const b = document.createElement("button"); b.className = "chip"; b.textContent = s; b.onclick = () => send(s); $("chips").appendChild(b); });
+
+function note(t, err) { $("note").textContent = t; $("note").classList.toggle("err", !!err); }
+function toBottom() { chat.scrollTop = chat.scrollHeight; }
+function ui() {
+  go.disabled = !busy && !input.value.trim();
+  go.textContent = busy ? "■" : "↑";
+  go.setAttribute("aria-label", busy ? "Stop" : "Send");
+}
+function md(t) {
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return esc(t).split("```").map((p, i) => i % 2
+    ? "<pre><code>" + p.replace(/^[\w-]*\n/, "") + "</code></pre>"
+    : p.replace(/`([^`\n]+)`/g, "<code>$1</code>").replace(/\*\*([^*\n]+)\*\*/g, "<b>$1</b>")).join("");
+}
+function addMsg(kind) {
+  const d = document.createElement("div");
+  d.className = "m " + kind; wrap.appendChild(d); toBottom(); return d;
+}
+function openChat(c) {
+  cur = c; wrap.innerHTML = "";
+  emptyEl.hidden = c.turns.length > 0;
+  c.turns.forEach((t) => { const d = addMsg(t.role === "user" ? "u" : "a"); if (t.role === "user") d.textContent = t.content; else d.innerHTML = md(t.content); });
+  $("side").classList.remove("open"); renderList(); toBottom();
+}
+function renderList() {
+  const l = $("list"); l.innerHTML = "";
+  chats.forEach((c) => {
+    const row = document.createElement("div"); row.className = "item" + (c === cur ? " on" : "");
+    const t = document.createElement("button"); t.className = "t"; t.textContent = c.title; t.onclick = () => { if (!busy) openChat(c); };
+    const x = document.createElement("button"); x.className = "x"; x.textContent = "×"; x.setAttribute("aria-label", "Delete chat");
+    x.onclick = () => {
+      if (busy) return;
+      chats = chats.filter((k) => k !== c); save();
+      if (c === cur) openChat(newChat()); else renderList();
+    };
+    row.append(t, x); l.appendChild(row);
+  });
+}
+function sheet(show) { $("sheet").hidden = !show; $("close").hidden = !engine; if (show) hint(); }
+
+$("load").onclick = async () => {
+  if (!navigator.gpu) { note("This browser has no WebGPU. Use a recent Chrome or Edge on a computer, or Safari on iOS 26 or newer.", true); return; }
+  $("load").disabled = true; $("model").disabled = true; $("bar").hidden = false; note("Starting…");
+  try {
+    const ad = await navigator.gpu.requestAdapter();
+    if (!ad) throw new Error("no GPU found");
+    const f16 = ad.features.has("shader-f16");
+    const w = await import(WEBLLM);
+    const base = $("model").value, id = base + (f16 ? "-q4f16_1-MLC" : "-q4f32_1-MLC");
+    if (!w.prebuiltAppConfig.model_list.some((m) => m.model_id === id)) throw new Error(base + " is not available on this device");
+    if (engine) { await engine.unload(); engine = null; }
+    engine = await w.CreateMLCEngine(id, { initProgressCallback: (r) => { $("bar").value = r.progress || 0; note(r.text || "Loading…"); } });
+    $("mname").textContent = MODELS[$("model").selectedIndex][1].split(":")[1].trim();
+    sheet(false); input.focus();
+  } catch (e) {
+    engine = null; $("mname").textContent = "Choose model";
+    note("Couldn’t load it. Try a smaller model, and close other tabs to free memory. (" + ((e && e.message) || "unknown error") + ")", true);
+  }
+  $("load").disabled = false; $("model").disabled = false; $("bar").hidden = true; $("close").hidden = !engine; ui();
+};
+
+async function send(text) {
+  text = (text || "").trim();
+  if (!text || busy) return;
+  if (!engine) { sheet(true); return; }
+  if (!chats.includes(cur)) chats.unshift(cur);
+  if (!cur.turns.length) cur.title = text.slice(0, 40);
+  cur.turns.push({ role: "user", content: text });
+  emptyEl.hidden = true;
+  addMsg("u").textContent = text;
+  const bot = addMsg("a");
+  bot.innerHTML = '<span class="dots"><span></span><span></span><span></span></span>';
+  input.value = ""; input.style.height = "auto"; busy = true; ui(); renderList();
+  let out = "";
+  try {
+    const stream = await engine.chat.completions.create({
+      messages: [{ role: "system", content: SYSTEM }].concat(cur.turns.slice(-9)),
+      stream: true, temperature: 0.7, max_tokens: 1024
+    });
+    for await (const c of stream) {
+      out += (c.choices[0] && c.choices[0].delta && c.choices[0].delta.content) || "";
+      if (out) { bot.innerHTML = md(out); toBottom(); }
+    }
+  } catch (e) {}
+  if (out) cur.turns.push({ role: "assistant", content: out });
+  else { cur.turns.pop(); bot.classList.add("err"); bot.textContent = "No reply. Please try again."; }
+  save(); busy = false; ui(); input.focus();
+}
+
+go.onclick = () => { if (busy && engine) engine.interruptGenerate(); else send(input.value); };
+input.addEventListener("input", () => { input.style.height = "auto"; input.style.height = Math.min(input.scrollHeight, 150) + "px"; ui(); });
+input.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey && !matchMedia("(pointer:coarse)").matches) { e.preventDefault(); send(input.value); }
+});
+$("new").onclick = () => { if (busy && engine) engine.interruptGenerate(); openChat(newChat()); };
+$("menu").onclick = () => $("side").classList.add("open");
+$("scrim").onclick = () => $("side").classList.remove("open");
+$("pick").onclick = () => { if (!busy) sheet(true); };
+$("close").onclick = () => sheet(false);
+openChat(newChat()); sheet(true); ui();
+</script>
+</body>
+</html>
